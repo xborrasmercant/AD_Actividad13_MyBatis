@@ -1,3 +1,4 @@
+import com.sun.tools.javac.Main;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -10,21 +11,22 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class MainMenu implements BookingMapper{
-    private final String MYBATIS_CONFIG_PATH = "mybatis-config.xml";
+    private static final String MYBATIS_CONFIG_PATH = "mybatis-config.xml";
     ArrayList<Booking> bookingsCollection = new ArrayList<>();
     private static BookingMapper bMapper;
     private static SqlSessionFactory sqlSessionFactory;
     private static SqlSession session;
-    private BookingMapper bookingMapper;
+    private static BookingMapper bookingMapper;
 
-    public void main(String[] args) {
+    public static void main(String[] args) {
+        MainMenu menu = new MainMenu();
         Scanner input = new Scanner(System.in);
         String option;
 
         try {
             sqlSessionFactory = new SqlSessionFactoryBuilder().build(Resources.getResourceAsStream(MYBATIS_CONFIG_PATH));
             session = sqlSessionFactory.openSession();
-            this.bookingMapper = session.getMapper(BookingMapper.class);
+            bookingMapper = session.getMapper(BookingMapper.class);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -52,30 +54,31 @@ public class MainMenu implements BookingMapper{
                 case "1" -> {
                     System.out.print("Enter the XML file path: ");
                     String xmlFilePath = input.nextLine();
-                    loadXmlData(xmlFilePath);
+                    menu.loadXmlData(xmlFilePath);
                 }
                 case "2" -> {
                     System.out.print("Enter the CSV file path: ");
                     String csvFilePath = input.nextLine();
-                    saveDataToCsv(csvFilePath);
+                    menu.saveDataToCsv(csvFilePath);
                 }
-                case "3" -> deleteAllBookings();
-                case "4" -> insertBooking(Booking.createNewBooking(Booking.Type.NEW));
+                case "3" -> menu.deleteAllBookings();
+                case "4" -> menu.insertBooking(Booking.createNewBooking(Booking.Type.NEW));
                 case "5" -> {
                     System.out.print("Enter Booking ID to delete: ");
                     String bookingId = input.nextLine();
-                    deleteBookingById(bookingId);
+                    menu.deleteBookingById(bookingId);
                 }
                 case "6" -> {
                     System.out.print("Enter Booking ID to update: ");
                     String bookingId = input.nextLine();
-                    updateBooking(getBookingById(bookingId));
+                    menu.updateBooking(menu.getBookingById(bookingId));
                 }
                 case "7" -> System.exit(0);
                 default -> System.out.println("Invalid option. Please, try again.");
             }
         }
     }
+
 
     @Override
     public void insertBooking(Booking booking) {
